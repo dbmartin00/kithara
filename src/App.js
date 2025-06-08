@@ -113,7 +113,7 @@ function App() {
         </div>
 
         <ReCAPTCHA
-          sitekey="6Le5tFkrAAAAAMmPj_j6b3VJKaVJP5mEXiQpDNJ8" // Replace with your actual site key
+          sitekey="6Lf59FkrAAAAADzEQXiOOJQERUCKdBN-o1XwnNtJ" // Replace with your actual site key
           onChange={(token) => setCaptchaToken(token)}
           theme="dark"
         />
