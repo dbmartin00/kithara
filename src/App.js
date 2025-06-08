@@ -10,6 +10,9 @@ function App() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e) => {
+    
+    console.log('a polite hello...');
+
     e.preventDefault();
 
     if (!captchaToken) {
@@ -30,14 +33,28 @@ function App() {
       );
 
       // Get filename from Content-Disposition
-      const contentDisposition = response.headers['content-disposition'];
+      // const contentDisposition = response.headers['content-disposition'];
+      // let filename = 'kithara.mid';
+      // if (contentDisposition) {
+      //   const match = contentDisposition.match(/filename="(.+)"/);
+      //   if (match && match[1]) {
+      //     filename = match[1];
+      //   }
+      // }
+
+      console.log('response.headers', response.headers);
+
+      // Try all known header casing possibilities
+      const contentDisposition = response.headers['content-disposition'] || response.headers['Content-Disposition'];
+
       let filename = 'kithara.mid';
       if (contentDisposition) {
-        const match = contentDisposition.match(/filename="(.+)"/);
+        const match = contentDisposition.match(/filename="(.+?)"/);
         if (match && match[1]) {
           filename = match[1];
         }
       }
+
 
       const blob = new Blob([response.data], { type: 'audio/midi' });
       const url = window.URL.createObjectURL(blob);
