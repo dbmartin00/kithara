@@ -29,11 +29,21 @@ function App() {
         }
       );
 
+      // Get filename from Content-Disposition
+      const contentDisposition = response.headers['content-disposition'];
+      let filename = 'kithara.mid';
+      if (contentDisposition) {
+        const match = contentDisposition.match(/filename="(.+)"/);
+        if (match && match[1]) {
+          filename = match[1];
+        }
+      }
+
       const blob = new Blob([response.data], { type: 'audio/midi' });
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = 'kithara.mid';
+      a.download = filename;
       document.body.appendChild(a);
       a.click();
       a.remove();
@@ -100,16 +110,13 @@ function App() {
           >
             {isSubmitting ? 'Generating...' : 'Generate'}
           </button>
-
         </div>
 
-        {!captchaToken && (
-          <ReCAPTCHA
-            sitekey="6Lf59FkrAAAAADzEQXiOOJQERUCKdBN-o1XwnNtJ"
-            onChange={(token) => setCaptchaToken(token)}
-            theme="dark"
-          />
-        )}
+        <ReCAPTCHA
+          sitekey="6Le5tFkrAAAAAMmPj_j6b3VJKaVJP5mEXiQpDNJ8" // Replace with your actual site key
+          onChange={(token) => setCaptchaToken(token)}
+          theme="dark"
+        />
       </form>
     </div>
   );
