@@ -33,7 +33,7 @@ function App() {
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `kithara-${scale}-${type}-${tempo}.mid`;
+      a.download = 'kithara.mid';
       document.body.appendChild(a);
       a.click();
       a.remove();
@@ -100,11 +100,12 @@ function App() {
           >
             {isSubmitting ? 'Generating...' : 'Generate'}
           </button>
+
         </div>
 
         {!captchaToken && (
           <ReCAPTCHA
-            sitekey="6Le5tFkrAAAAAMmPj_j6b3VJKaVJP5mEXiQpDNJ8"
+            sitekey="6Lf59FkrAAAAADzEQXiOOJQERUCKdBN-o1XwnNtJ"
             onChange={(token) => setCaptchaToken(token)}
             theme="dark"
           />
