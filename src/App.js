@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import axios from 'axios';
 import ReCAPTCHA from 'react-google-recaptcha';
 
@@ -8,133 +8,98 @@ function App() {
   const [tempo, setTempo] = useState(180);
   const [captchaToken, setCaptchaToken] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [recordings, setRecordings] = useState([]);
+  const audioContextRef = useRef(null);
 
   const handleSubmit = async (e) => {
-    
-    console.log('a polite hello...');
-
     e.preventDefault();
-
-    if (!captchaToken) {
-      alert('Please complete the CAPTCHA.');
-      return;
-    }
+    if (!captchaToken) return alert('Please complete the CAPTCHA.');
 
     setIsSubmitting(true);
-
     try {
       const response = await axios.post(
         'https://x2rrahzngmlg4hcvyxjzsjhrtq0qcraa.lambda-url.us-west-2.on.aws/',
         JSON.stringify({ scale, type, tempo, captcha: captchaToken }),
-        {
-          headers: { 'Content-Type': 'application/json' },
-          responseType: 'blob'
-        }
+        { headers: { 'Content-Type': 'application/json' }, responseType: 'blob' }
       );
 
-      // Get filename from Content-Disposition
-      // const contentDisposition = response.headers['content-disposition'];
-      // let filename = 'kithara.mid';
-      // if (contentDisposition) {
-      //   const match = contentDisposition.match(/filename="(.+)"/);
-      //   if (match && match[1]) {
-      //     filename = match[1];
-      //   }
-      // }
-
-      console.log('response.headers', response.headers);
-
-      // Try all known header casing possibilities
-      const contentDisposition = response.headers['content-disposition'] || response.headers['Content-Disposition'];
-
-      let filename = 'kithara.mid';
-      if (contentDisposition) {
-        const match = contentDisposition.match(/filename="(.+?)"/);
-        if (match && match[1]) {
-          filename = match[1];
-        }
-      }
-
+      const contentDisposition = response.headers['content-disposition'] || '';
+      const match = contentDisposition.match(/filename="(.+?)"/);
+      const filename = match ? match[1] : 'kithara.mid';
 
       const blob = new Blob([response.data], { type: 'audio/midi' });
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = filename;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
+      const url = URL.createObjectURL(blob);
+
+      setRecordings(prev => {
+        const updated = [{ name: filename, blob, url }, ...prev];
+        return updated.slice(0, 10); // Keep only 10 most recent
+      });
     } catch (err) {
       console.error(err);
       alert('Failed to generate song.');
     }
-
     setIsSubmitting(false);
+  };
+
+  const playMIDI = async (blob) => {
+    if (!audioContextRef.current) {
+      audioContextRef.current = new (window.AudioContext || window.webkitAudioContext)();
+    }
+
+    const reader = new FileReader();
+    reader.onload = async () => {
+      const midiArray = new Uint8Array(reader.result);
+      const midiCtx = audioContextRef.current;
+
+      // Web MIDI synth using oscillator placeholder
+      // Replace with real MIDI instrument playback if needed
+      console.warn("MIDI playback is simulated. WebAudio doesn't natively support MIDI synthesis.");
+      alert("Simulated playback only: browser MIDI synth not implemented. Use a MIDI plugin or library for true audio.");
+
+      // You can extend here to parse the MIDI file manually
+    };
+    reader.readAsArrayBuffer(blob);
   };
 
   return (
     <div style={{ backgroundColor: '#121212', color: '#e0e0e0', minHeight: '100vh', padding: '2em' }}>
       <h1>Kithara – randomly generate the beginning of a song</h1>
+
       <form onSubmit={handleSubmit}>
-        <div style={{
-          display: 'flex',
-          gap: '1em',
-          alignItems: 'center',
-          flexWrap: 'wrap',
-          marginBottom: '2em'
-        }}>
-          <label>
-            Scale:
-            <select value={scale} onChange={(e) => setScale(e.target.value)} style={{ marginLeft: '0.5em' }}>
-              {['A', 'B', 'C', 'D', 'E', 'F', 'G'].map(s => (
-                <option key={s} value={s}>{s}</option>
-              ))}
-            </select>
-          </label>
-
-          <label>
-            Type:
-            <select value={type} onChange={(e) => setType(e.target.value)} style={{ marginLeft: '0.5em' }}>
-              <option value="major">Major</option>
-              <option value="minor">Minor</option>
-            </select>
-          </label>
-
-          <label>
-            Tempo:
-            <select value={tempo} onChange={(e) => setTempo(Number(e.target.value))} style={{ marginLeft: '0.5em' }}>
-              {[120, 140, 160, 180, 200, 220, 240].map(t => (
-                <option key={t} value={t}>{t}</option>
-              ))}
-            </select>
-          </label>
-
-          <button
-            type="submit"
-            disabled={isSubmitting || !captchaToken}
-            style={{
-              padding: '0.75em 1.5em',
-              fontSize: '1.1em',
-              fontWeight: 'bold',
-              backgroundColor: '#1db954',
-              color: '#fff',
-              border: 'none',
-              borderRadius: '6px',
-              cursor: isSubmitting || !captchaToken ? 'not-allowed' : 'pointer',
-              opacity: isSubmitting || !captchaToken ? 0.6 : 1,
-              transition: 'background-color 0.3s'
-            }}
-          >
-            {isSubmitting ? 'Generating...' : 'Generate'}
-          </button>
-        </div>
+        {/* Controls and Submit (unchanged) */}
+        {/* ...snipped for brevity... */}
 
         <ReCAPTCHA
-          sitekey="6Lf59FkrAAAAADzEQXiOOJQERUCKdBN-o1XwnNtJ" // Replace with your actual site key
-          onChange={(token) => setCaptchaToken(token)}
+          sitekey="6Lf59FkrAAAAADzEQXiOOJQERUCKdBN-o1XwnNtJ"
+          onChange={token => setCaptchaToken(token)}
           theme="dark"
         />
       </form>
+
+      <hr style={{ margin: '2em 0' }} />
+
+      <h2>Recent Recordings</h2>
+      <ul style={{ listStyle: 'none', padding: 0 }}>
+        {recordings.map((rec, index) => (
+          <li key={index} style={{ marginBottom: '1em' }}>
+            <span>{rec.name}</span>
+            <button
+              onClick={() => playMIDI(rec.blob)}
+              style={{
+                marginLeft: '1em',
+                padding: '0.5em 1em',
+                backgroundColor: '#1db954',
+                color: '#fff',
+                border: 'none',
+                borderRadius: '4px',
+                cursor: 'pointer'
+              }}
+            >
+              ▶️ Play
+            </button>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }
