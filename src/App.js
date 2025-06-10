@@ -185,6 +185,7 @@ function App() {
         {recordings.map((rec, index) => (
           <li key={index} style={{ marginBottom: '1em' }}>
             <span>{rec.name}</span>
+
             <button
               onClick={() => playOrPauseMIDI(index, rec.blob)}
               style={{
@@ -199,9 +200,28 @@ function App() {
             >
               {currentlyPlayingIndex === index && !isPaused ? '⏸ Pause' : '▶️ Play'}
             </button>
+
+            <a
+              href={rec.url}
+              download={rec.name}
+              style={{
+                marginLeft: '1em',
+                padding: '0.5em 1em',
+                backgroundColor: '#535353',
+                color: '#fff',
+                border: 'none',
+                borderRadius: '4px',
+                textDecoration: 'none',
+                display: 'inline-block'
+              }}
+            >
+              ⬇️ Download
+            </a>
           </li>
         ))}
       </ul>
+      
+
     </div>
   );
 }
