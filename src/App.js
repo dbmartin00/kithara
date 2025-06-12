@@ -3,6 +3,7 @@ import axios from 'axios';
 import ReCAPTCHA from 'react-google-recaptcha';
 import { Midi } from '@tonejs/midi';
 import * as Tone from 'tone';
+import { Analytics } from '@vercel/analytics/react';
 
 function App() {
   const [scale, setScale] = useState('C');
@@ -61,27 +62,23 @@ function App() {
   const playOrPauseMIDI = async (index, blob) => {
     await Tone.start();
 
-    // Pause current playback if same track
     if (currentlyPlayingIndex === index && !isPaused) {
       Tone.Transport.pause();
       setIsPaused(true);
       return;
     }
 
-    // Resume current if paused
     if (currentlyPlayingIndex === index && isPaused) {
       Tone.Transport.start();
       setIsPaused(false);
       return;
     }
 
-    // Stop any previous part
     Tone.Transport.stop();
     if (partRef.current) {
       partRef.current.dispose();
     }
 
-    // Load new MIDI
     const arrayBuffer = await blob.arrayBuffer();
     const midi = new Midi(arrayBuffer);
 
@@ -220,8 +217,9 @@ function App() {
           </li>
         ))}
       </ul>
-      
 
+      {/* ✅ Vercel Analytics is initialized here */}
+      <Analytics />
     </div>
   );
 }
